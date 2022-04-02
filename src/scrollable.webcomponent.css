@@ -1,0 +1,78 @@
+:export {
+  variables_scrollable_gap: "--scrollable-gap";
+  variables_scrollbar_thickness: "--scrollbar-thickness";
+}
+
+.scrollable {
+  --scrollable-gap-local: var(--scrollable-gap, 1rem);
+  --scrollbar-thickness-local: var(--scrollbar-thickness, 0.8rem);
+  --scrollbar-container-thickness-local: calc(var(--scrollbar-thickness-local) + 1px); /* stylelint-disable-line unit-allowed-list  */
+
+  display: grid;
+  grid-gap: var(--scrollable-gap-local);
+  max-height: 100%;
+  max-width: 100%;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "main";
+
+  .main {
+    grid-area: "main";
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, and Opera */
+    }
+
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+
+    .window {
+      display: "inline";
+    }
+  }
+
+  .right {
+    grid-area: "right";
+    display: flex;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .bottom {
+    grid-area: "bottom";
+    display: flex;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &-both {
+    grid-template-columns: 1fr var(--scrollbar-container-thickness-local);
+    grid-template-rows: 1fr var(--scrollbar-container-thickness-local);
+    grid-template-areas:
+      "main right"
+      "bottom empty";
+  }
+
+  &-right {
+    grid-template-columns: 1fr var(--scrollbar-container-thickness-local);
+    grid-template-areas: "main right";
+
+    .main {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+
+  &-bottom {
+    grid-template-rows: 1fr var(--scrollbar-container-thickness-local);
+    grid-template-areas:
+      "main"
+      "bottom";
+
+    .main {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+  }
+}
