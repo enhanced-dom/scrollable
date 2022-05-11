@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce'
 import { ScrollbarWebComponent, ScrollDirection } from '@enhanced-dom/scrollbar'
 import { StylesheetsRepository } from '@enhanced-dom/css'
 
-import * as styles from './scrollable.webcomponent.css'
+import * as styles from './scrollable.webcomponent.pcss'
 import { selectors } from './scrollable.selectors'
 
 export enum ScrollbarPositions {

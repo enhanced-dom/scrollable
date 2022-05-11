@@ -1,6 +1,6 @@
 {
   "name": "@enhanced-dom/scrollable",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scrollable webcomponent",
   "keywords": [],
   "repository": "https://github.com/enhanced-dom/scrollable.git",
@@ -9,10 +9,12 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "rimraf dist/*",
-    "build": "tsc -p ./tsconfig.json && copyfiles -f src/*.css src/*.css.d.ts dist",
-    "postbuild": "copyfiles package.json LICENSE.md README.md dist",
+    "build": "tsc -p ./tsconfig.json && copyfiles -f src/*.pcss src/*.pcss.d.ts dist",
+    "postbuild": "copyfiles LICENSE.md README.md dist && @enhanced-dom-copy-packagejson",
     "package": "cd dist && npm pack",
-    "lint": "eslint --fix --config eslint.config.js --ext ts,tsx src && stylelint --fix --config stylelint.config.js src/**/*.css"
+    "postinstall": "@enhanced-dom-husky",
+    "css": "webpack --config typed-styles.config.js",
+    "lint": "eslint --fix --config eslint.config.js --ext ts,tsx src && stylelint --fix --config stylelint.config.js src/**/*.pcss"
   },
   "dependencies": {
     "@enhanced-dom/webcomponent": "^0.0.6",
@@ -21,7 +23,8 @@
     "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
-    "@enhanced-dom/lint": "^0.0.4",
+    "@enhanced-dom/lint": "^0.0.6",
+    "@enhanced-dom/webpack": "^0.0.6",
     "@types/lodash.debounce": "^4.0.6",
     "copyfiles": "^2.4.1",
     "rimraf": "^3.0.2",
