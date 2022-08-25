@@ -1,7 +1,7 @@
-import { HtmlRenderer, IRenderingEngine, SECTION_ID, EVENT_EMITTER_TYPE } from '@enhanced-dom/webcomponent'
+import { HtmlRenderer, IRenderingEngine, SECTION_ID, EVENT_EMITTER_TYPE, EventListenerTracker } from '@enhanced-dom/webcomponent'
 import classNames from 'classnames'
 import debounce from 'lodash.debounce'
-import { ScrollbarWebComponent, ScrollDirection } from '@enhanced-dom/scrollbar'
+import { ScrollbarWebComponent } from '@enhanced-dom/scrollbar'
 import { StylesheetsRepository } from '@enhanced-dom/css'
 
 import * as styles from './scrollable.webcomponent.pcss'
@@ -23,6 +23,7 @@ export class ScrollableWebComponent extends HTMLElement {
 
   static cssVariables = {
     scrollableGap: styles.variablesScrollableGap,
+    scrollbarThickness: styles.variablesScrollbarThickness,
   }
 
   static sectionIdentifiers = selectors
@@ -43,7 +44,7 @@ export class ScrollableWebComponent extends HTMLElement {
       scrollbarNodes.push({
         tag: ScrollbarWebComponent.tag,
         attributes: {
-          direction: ScrollDirection.vertical,
+          orientation: ScrollbarWebComponent.orientations.vertical,
           value: scrollTop,
           class: styles.right,
           [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.RIGHT_SCROLLBAR,
@@ -54,8 +55,8 @@ export class ScrollableWebComponent extends HTMLElement {
       scrollbarNodes.push({
         tag: ScrollbarWebComponent.tag,
         attributes: {
+          orientation: ScrollbarWebComponent.orientations.horizontal,
           value: scrollLeft,
-          direction: ScrollDirection.horizontal,
           class: styles.bottom,
           [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.BOTTOM_SCROLLBAR,
         },
@@ -100,8 +101,12 @@ export class ScrollableWebComponent extends HTMLElement {
     }
   }
   static renderer: IRenderingEngine = new HtmlRenderer('@enhanced-dom/ScrollableWebComponent', ScrollableWebComponent.template)
-  private _attributes: Record<string, any> = { scrollbars: [ScrollbarPositions.bottom, ScrollbarPositions.right] }
-
+  private _attributes: Record<string, any> = {
+    scrollbars: [
+      /*ScrollbarPositions.bottom, ScrollbarPositions.right*/
+    ],
+  }
+  private _eventListenerTracker = new EventListenerTracker()
   private _stylesheetsRepository: StylesheetsRepository
 
   constructor() {
@@ -111,22 +116,88 @@ export class ScrollableWebComponent extends HTMLElement {
       type: EVENT_EMITTER_TYPE,
       id: ScrollableWebComponent.tag,
     })
-    ScrollableWebComponent.renderer.render(this.shadowRoot, this._attributes)
+    this._addEventListeners()
+  }
+
+  private _addEventListeners = (activate?: boolean) => {
+    this._eventListenerTracker.unregister({ nodeLocator: this._findScrollContainer })
+    this._eventListenerTracker.unregister({ nodeLocator: this._findRightScrollbar })
+    this._eventListenerTracker.unregister({ nodeLocator: this._findBottomScrollbar })
+    this._eventListenerTracker.register({
+      hook: (e: Element) => {
+        const monitorScrollContainerScroll = (event) => {
+          if (event.target === this._findScrollContainer()) {
+            event.stopPropagation()
+            if (this._findRightScrollbar()) {
+              this._findRightScrollbar().value = this._findScrollContainer().scrollTop
+            }
+            if (this._findBottomScrollbar()) {
+              this._findBottomScrollbar().value = this._findScrollContainer().scrollLeft
+            }
+            this.dispatchEvent(new Event('scroll'))
+          }
+        }
+        e.addEventListener('scroll', monitorScrollContainerScroll)
+        return (e1: Element) => {
+          e1.removeEventListener('scroll', monitorScrollContainerScroll)
+        }
+      },
+      nodeLocator: this._findScrollContainer,
+    })
+    if (this._attributes.scrollbars?.includes(ScrollbarPositions.right)) {
+      this._eventListenerTracker.register({
+        hook: (e: Element) => {
+          const monitorRightScrollbarScroll = (event) => {
+            if (event.target === this._findRightScrollbar()) {
+              event.stopPropagation()
+              this._findScrollContainer().scrollTop = this._findRightScrollbar().value
+              this.dispatchEvent(new Event('scroll'))
+            }
+          }
+          e.addEventListener('scroll', monitorRightScrollbarScroll)
+          return (e1: Element) => {
+            e1.removeEventListener('scroll', monitorRightScrollbarScroll)
+          }
+        },
+        nodeLocator: this._findRightScrollbar,
+      })
+    }
+    if (this._attributes.scrollbars?.includes(ScrollbarPositions.bottom)) {
+      this._eventListenerTracker.register({
+        hook: (e: Element) => {
+          const monitorBottomScrollbarScroll = (event) => {
+            if (event.target === this._findBottomScrollbar()) {
+              event.stopPropagation()
+              this._findScrollContainer().scrollLeft = this._findBottomScrollbar().value
+              this.dispatchEvent(new Event('scroll'))
+            }
+          }
+          e.addEventListener('scroll', monitorBottomScrollbarScroll)
+          return (e1: Element) => {
+            e1.removeEventListener('scroll', monitorBottomScrollbarScroll)
+          }
+        },
+        nodeLocator: this._findBottomScrollbar,
+      })
+    }
+    if (activate) {
+      this._eventListenerTracker.refreshSubscriptions()
+    }
   }
 
   private get $mainContentElement() {
     return this.shadowRoot.querySelector(`*[${SECTION_ID}="${ScrollableWebComponent.sectionIdentifiers.SCROLL_SIZER}"]`)
   }
 
-  private get $scrollContainer() {
+  private _findScrollContainer = () => {
     return this.shadowRoot.querySelector(`*[${SECTION_ID}="${ScrollableWebComponent.sectionIdentifiers.SCROLL_CONTAINER}"]`)
   }
 
-  private get $rightScrollbar(): ScrollbarWebComponent {
+  private _findRightScrollbar = (): ScrollbarWebComponent => {
     return this.shadowRoot.querySelector(`*[${SECTION_ID}="${ScrollableWebComponent.sectionIdentifiers.RIGHT_SCROLLBAR}"]`)
   }
 
-  private get $bottomScrollbar(): ScrollbarWebComponent {
+  private _findBottomScrollbar = (): ScrollbarWebComponent => {
     return this.shadowRoot.querySelector(`*[${SECTION_ID}="${ScrollableWebComponent.sectionIdentifiers.BOTTOM_SCROLLBAR}"]`)
   }
 
@@ -151,52 +222,11 @@ export class ScrollableWebComponent extends HTMLElement {
     }
   }
 
-  private _attachScrollListeners() {
-    this.$scrollContainer.addEventListener(
-      'scroll',
-      (e) => {
-        if (e.target === this.$scrollContainer) {
-          e.stopPropagation()
-          if (this.$rightScrollbar) {
-            this.$rightScrollbar.value = this.$scrollContainer.scrollTop
-          }
-          if (this.$bottomScrollbar) {
-            this.$bottomScrollbar.value = this.$scrollContainer.scrollLeft
-          }
-          this.dispatchEvent(new Event('scroll'))
-        }
-      },
-      true,
-    )
-    if (this.$rightScrollbar) {
-      this.$rightScrollbar.addEventListener(
-        'scroll',
-        (e) => {
-          e.stopPropagation()
-          this.$scrollContainer.scrollTop = this.$rightScrollbar.value
-          this.dispatchEvent(new Event('scroll'))
-        },
-        true,
-      )
-    }
-    if (this.$bottomScrollbar) {
-      this.$bottomScrollbar.addEventListener(
-        'scroll',
-        (e) => {
-          e.stopPropagation()
-          this.$scrollContainer.scrollLeft = this.$bottomScrollbar.value
-          this.dispatchEvent(new Event('scroll'))
-        },
-        true,
-      )
-    }
-  }
-
   render = debounce(
     () => {
       ScrollableWebComponent.renderer.render(this.shadowRoot, this._attributes)
       this._monitorScrollSize()
-      this._attachScrollListeners()
+      this._eventListenerTracker.refreshSubscriptions()
     },
     10,
     { leading: false, trailing: true },
@@ -218,24 +248,25 @@ export class ScrollableWebComponent extends HTMLElement {
     const parsedValue: ScrollbarPositions[] = typeof value === 'string' ? JSON.parse(value) : value
     this._attributes.scrollbars = parsedValue
     this.setAttribute('scrollbars', JSON.stringify(parsedValue))
+    this._addEventListeners(true)
   }
 
   get scrollLeft(): number {
-    return this.$scrollContainer.scrollLeft
+    return this._findScrollContainer().scrollLeft
   }
 
   set scrollLeft(newValue: number | string) {
     const numericScrollValue = typeof newValue === 'string' ? parseInt(newValue) : newValue
-    this.$scrollContainer.scrollLeft = numericScrollValue
+    this._findScrollContainer().scrollLeft = numericScrollValue
   }
 
   get scrollTop(): number {
-    return this.$scrollContainer.scrollTop
+    return this._findScrollContainer().scrollTop
   }
 
   set scrollTop(newValue: number | string) {
     const numericScrollValue = typeof newValue === 'string' ? parseInt(newValue) : newValue
-    this.$scrollContainer.scrollTop = numericScrollValue
+    this._findScrollContainer().scrollTop = numericScrollValue
   }
 
   attributeChangedCallback(name: string, oldVal: string, newVal: string) {
