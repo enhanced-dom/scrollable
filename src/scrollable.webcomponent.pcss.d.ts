@@ -1,4 +1,3 @@
-export const _stylesheetName: string;
 export const variablesScrollableGap: string;
 export const variablesScrollbarThickness: string;
 export const scrollable: string;

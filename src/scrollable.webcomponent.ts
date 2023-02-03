@@ -1,11 +1,13 @@
-import { HtmlRenderer, IRenderingEngine, SECTION_ID, EVENT_EMITTER_TYPE, EventListenerTracker } from '@enhanced-dom/webcomponent'
+import { WebcomponentRenderer, IRenderingEngine } from '@enhanced-dom/webcomponent'
+import { EventListenerTracker, SECTION_ID } from '@enhanced-dom/dom'
+import { STYLESHEET_ATTRIBUTE_NAME, StylesheetsRepository } from '@enhanced-dom/css'
+import { ScrollbarWebComponent } from '@enhanced-dom/scrollbar'
 import classNames from 'classnames'
 import debounce from 'lodash.debounce'
-import { ScrollbarWebComponent } from '@enhanced-dom/scrollbar'
-import { StylesheetsRepository } from '@enhanced-dom/css'
+import uniqueId from 'lodash.uniqueid'
 
 import * as styles from './scrollable.webcomponent.pcss'
-import { selectors } from './scrollable.selectors'
+import { selectors, URN_PREFIX } from './scrollable.selectors'
 
 export enum ScrollbarPositions {
   right = 'right',
@@ -15,6 +17,8 @@ export enum ScrollbarPositions {
 export interface ScrollableWebComponentAttributes {
   scrollbars: ScrollbarPositions[]
 }
+
+const SCROLLABLE_STYLESHET_NAME = `${URN_PREFIX}:styles`
 
 export class ScrollableWebComponent extends HTMLElement {
   static get observedAttributes() {
@@ -38,13 +42,14 @@ export class ScrollableWebComponent extends HTMLElement {
     ScrollbarWebComponent.register()
   }
 
-  static template = ({ scrollbars, scrollTop, scrollLeft, ...rest }: Record<string, any> = {}) => {
+  static template = ({ scrollbars, scrollTop, scrollLeft, containerId, ...rest }: Record<string, any> = {}) => {
     const scrollbarNodes = []
     if (scrollbars?.includes(ScrollbarPositions.right)) {
       scrollbarNodes.push({
         tag: ScrollbarWebComponent.tag,
         attributes: {
           orientation: ScrollbarWebComponent.orientations.vertical,
+          for: containerId,
           value: scrollTop,
           class: styles.right,
           [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.RIGHT_SCROLLBAR,
@@ -56,6 +61,7 @@ export class ScrollableWebComponent extends HTMLElement {
         tag: ScrollbarWebComponent.tag,
         attributes: {
           orientation: ScrollbarWebComponent.orientations.horizontal,
+          for: containerId,
           value: scrollLeft,
           class: styles.bottom,
           [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.BOTTOM_SCROLLBAR,
@@ -63,48 +69,61 @@ export class ScrollableWebComponent extends HTMLElement {
       })
     }
 
-    return {
-      tag: 'div',
-      attributes: {
-        ...rest,
-        class: classNames(styles.scrollable, rest.class, {
-          [styles.scrollableBottom]: scrollbars?.includes(ScrollbarPositions.bottom) && scrollbars?.length === 1,
-          [styles.scrollableRight]: scrollbars?.includes(ScrollbarPositions.right) && scrollbars?.length === 1,
-          [styles.scrollableBoth]: scrollbars?.length === 2,
-        }),
-        [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.WRAPPER,
-      },
-      children: [
-        {
-          tag: 'div',
-          attributes: {
-            class: styles.main,
-            [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.SCROLL_CONTAINER,
-          },
-          children: [
-            {
-              tag: 'div',
-              attributes: {
-                class: styles.window,
-                [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.SCROLL_SIZER,
-              },
-              children: [
-                {
-                  tag: 'slot',
-                },
-              ],
+    return [
+      {
+        tag: 'head',
+        children: [
+          {
+            tag: 'style',
+            attributes: {
+              [STYLESHEET_ATTRIBUTE_NAME]: SCROLLABLE_STYLESHET_NAME,
             },
-          ],
+          },
+        ],
+      },
+      {
+        tag: 'div',
+        attributes: {
+          ...rest,
+          class: classNames(styles.scrollable, rest.class, {
+            [styles.scrollableBottom]: scrollbars?.includes(ScrollbarPositions.bottom) && scrollbars?.length === 1,
+            [styles.scrollableRight]: scrollbars?.includes(ScrollbarPositions.right) && scrollbars?.length === 1,
+            [styles.scrollableBoth]: scrollbars?.length === 2,
+          }),
+          [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.WRAPPER,
         },
-        ...scrollbarNodes,
-      ],
-    }
+        children: [
+          {
+            tag: 'div',
+            attributes: {
+              class: styles.main,
+              id: containerId,
+              [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.SCROLL_CONTAINER,
+            },
+            children: [
+              {
+                tag: 'div',
+                attributes: {
+                  class: styles.window,
+                  [SECTION_ID]: ScrollableWebComponent.sectionIdentifiers.SCROLL_SIZER,
+                },
+                children: [
+                  {
+                    tag: 'slot',
+                  },
+                ],
+              },
+            ],
+          },
+          ...scrollbarNodes,
+        ],
+      },
+    ]
   }
-  static renderer: IRenderingEngine = new HtmlRenderer('@enhanced-dom/ScrollableWebComponent', ScrollableWebComponent.template)
+  static renderer: IRenderingEngine = new WebcomponentRenderer('@enhanced-dom/ScrollableWebComponent', ScrollableWebComponent.template)
   private _attributes: Record<string, any> = {
-    scrollbars: [
-      /*ScrollbarPositions.bottom, ScrollbarPositions.right*/
-    ],
+    scrollbars: [],
+    containerId: uniqueId(URN_PREFIX),
   }
   private _eventListenerTracker = new EventListenerTracker()
   private _stylesheetsRepository: StylesheetsRepository
@@ -112,17 +131,16 @@ export class ScrollableWebComponent extends HTMLElement {
   constructor() {
     super()
     this.attachShadow({ mode: 'open' })
-    this._stylesheetsRepository = new StylesheetsRepository(this.shadowRoot, {
-      type: EVENT_EMITTER_TYPE,
-      id: ScrollableWebComponent.tag,
-    })
-    this._addEventListeners()
   }
 
-  private _addEventListeners = (activate?: boolean) => {
+  private _removeEventListeners() {
     this._eventListenerTracker.unregister({ nodeLocator: this._findScrollContainer })
     this._eventListenerTracker.unregister({ nodeLocator: this._findRightScrollbar })
     this._eventListenerTracker.unregister({ nodeLocator: this._findBottomScrollbar })
+  }
+
+  private _addEventListeners = (activate?: boolean) => {
+    this._removeEventListeners()
     this._eventListenerTracker.register({
       hook: (e: Element) => {
         const monitorScrollContainerScroll = (event) => {
@@ -203,13 +221,13 @@ export class ScrollableWebComponent extends HTMLElement {
 
   private _scrollSizeObserver = new ResizeObserver((entries) => {
     this._stylesheetsRepository.setProperty(
-      styles._stylesheetName,
+      SCROLLABLE_STYLESHET_NAME,
       styles.right,
       ScrollbarWebComponent.cssVariables.scrollSize,
       `${entries[0].target.scrollHeight}px`,
     )
     this._stylesheetsRepository.setProperty(
-      styles._stylesheetName,
+      SCROLLABLE_STYLESHET_NAME,
       styles.bottom,
       ScrollbarWebComponent.cssVariables.scrollSize,
       `${entries[0].target.scrollWidth}px`,
@@ -233,11 +251,15 @@ export class ScrollableWebComponent extends HTMLElement {
   )
 
   connectedCallback() {
+    this._stylesheetsRepository = new StylesheetsRepository(this.shadowRoot, ScrollableWebComponent.tag)
+    this._addEventListeners()
     this.render()
   }
 
   disconnectedCallback() {
+    this.render.cancel()
     this._scrollSizeObserver.disconnect()
+    this._removeEventListeners()
   }
 
   get scrollbars() {
@@ -283,5 +305,3 @@ export class ScrollableWebComponent extends HTMLElement {
     }
   }
 }
-
-ScrollableWebComponent.renderer.addStyle(styles._stylesheetName)

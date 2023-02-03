@@ -1,4 +1,4 @@
-const URN_PREFIX = 'urn:enhanced-dom:scrollable'
+export const URN_PREFIX = 'urn:enhanced-dom:scrollable'
 
 export const selectors = {
   WRAPPER: `${URN_PREFIX}:wrapper`,
