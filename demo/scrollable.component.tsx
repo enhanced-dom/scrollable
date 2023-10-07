@@ -3,23 +3,17 @@ import { withReactAdapter } from '@enhanced-dom/react'
 
 import { ScrollableWebComponent, ScrollableWebComponentAttributes } from '../src'
 
-declare interface ScrollableAttributes
-  extends ScrollableWebComponentAttributes,
-    Omit<React.DetailedHTMLProps<React.HTMLAttributes<ScrollableWebComponent>, ScrollableWebComponent>, 'class' | 'style'> {
-  className?: string
-  style?: React.CSSProperties
-}
+declare type ScrollableComponentProps = ScrollableWebComponentAttributes &
+  React.DetailedHTMLProps<React.HTMLAttributes<ScrollableWebComponent>, ScrollableWebComponent>
 
-const Scrollable = withReactAdapter<
+export const Scrollable = withReactAdapter<
   ScrollableWebComponent,
   never[],
   typeof ScrollableWebComponent,
-  ScrollableAttributes,
+  ScrollableComponentProps,
   never,
   'renderer' | 'scrollbarPositions' | 'cssVariables' | 'sectionIdentifiers'
 >({
   type: ScrollableWebComponent,
   hoistedProps: ['renderer', 'scrollbarPositions', 'cssVariables', 'sectionIdentifiers'],
 })
-
-export default Scrollable

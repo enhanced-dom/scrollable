@@ -16,13 +16,14 @@ export enum ScrollbarPositions {
 
 export interface ScrollableWebComponentAttributes {
   scrollbars: ScrollbarPositions[]
+  delegated?: Record<string, string | number | boolean>
 }
 
 const SCROLLABLE_STYLESHET_NAME = `${URN_PREFIX}:styles`
 
 export class ScrollableWebComponent extends HTMLElement {
   static get observedAttributes() {
-    return ['scrollbars', 'class', 'style']
+    return ['scrollbars', 'delegated']
   }
 
   static cssVariables = {
@@ -42,7 +43,7 @@ export class ScrollableWebComponent extends HTMLElement {
     ScrollbarWebComponent.register()
   }
 
-  static template = ({ scrollbars, scrollTop, scrollLeft, containerId, ...rest }: Record<string, any> = {}) => {
+  static template = ({ scrollbars, scrollTop, scrollLeft, containerId, delegated = {}, ...rest }: Record<string, any> = {}) => {
     const scrollbarNodes = []
     if (scrollbars?.includes(ScrollbarPositions.right)) {
       scrollbarNodes.push({
@@ -85,7 +86,8 @@ export class ScrollableWebComponent extends HTMLElement {
         tag: 'div',
         attributes: {
           ...rest,
-          class: classNames(styles.scrollable, rest.class, {
+          ...delegated,
+          class: classNames(styles.scrollable, delegated.class, {
             [styles.scrollableBottom]: scrollbars?.includes(ScrollbarPositions.bottom) && scrollbars?.length === 1,
             [styles.scrollableRight]: scrollbars?.includes(ScrollbarPositions.right) && scrollbars?.length === 1,
             [styles.scrollableBoth]: scrollbars?.length === 2,
@@ -291,11 +293,25 @@ export class ScrollableWebComponent extends HTMLElement {
     this._findScrollContainer().scrollTop = numericScrollValue
   }
 
+  get delegated() {
+    return this._attributes.delegated
+  }
+  set delegated(d: string | Record<string, string | number | boolean>) {
+    if (typeof d === 'string') {
+      this._attributes.delegated = JSON.parse(d)
+    } else {
+      this._attributes.delegated = d
+    }
+  }
+
   attributeChangedCallback(name: string, oldVal: string, newVal: string) {
     if (oldVal !== newVal) {
       switch (name) {
         case 'scrollbars':
           this.scrollbars = newVal
+          break
+        case 'delegated':
+          this.delegated = newVal
           break
         default:
           this._attributes[name] = newVal

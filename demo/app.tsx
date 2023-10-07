@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 
 import { ScrollableWebComponent } from '../src'
-import Scrollable from './scrollable.component'
+import { Scrollable } from './scrollable.component'
 import * as styles from './app.pcss'
 
 const App = () => {
