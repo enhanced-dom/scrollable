@@ -16,7 +16,7 @@ const App = () => {
   return (
     <>
       <div className={styles.container}>
-        <Scrollable ref={scrollableRef} scrollbars={[Scrollable.scrollbarPositions.right, Scrollable.scrollbarPositions.bottom]}>
+        <Scrollable ref={scrollableRef} scrollbars={[Scrollable.scrollbarPositions.RIGHT, Scrollable.scrollbarPositions.BOTTOM]}>
           <div
             style={{ ...dimensions, background: 'radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)' }}
           />

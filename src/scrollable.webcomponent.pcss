@@ -1,12 +1,11 @@
 :export {
-  variables_scrollable_gap: "--scrollable-gap";
-  variables_scrollbar_thickness: "--scrollbar-thickness";
+  variables_scrollable_gap: '--scrollable-gap';
+  variables_scrollbar_thickness: '--scrollbar-thickness';
 }
 
 .scrollable {
   --scrollable-gap-local: var(--scrollable-gap, 1rem);
-  /* stylelint-disable-next-line unit-allowed-list */
-  --scrollbar-thickness-local: var(--scrollbar-thickness, 15px);
+  --scrollbar-thickness-local: var(--scrollbar-thickness, 15px); /* stylelint-disable-line unit-allowed-list */
   --scrollbar-container-thickness-local: calc(var(--scrollbar-thickness-local) + 1px); /* stylelint-disable-line unit-allowed-list  */
 
   display: grid;
@@ -15,10 +14,10 @@
   max-width: 100%;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-  grid-template-areas: "main";
+  grid-template-areas: 'main';
 
   .main {
-    grid-area: "main";
+    grid-area: 'main';
     overflow: auto;
 
     &::-webkit-scrollbar {
@@ -29,19 +28,19 @@
     scrollbar-width: none; /* Firefox */
 
     .window {
-      display: "inline";
+      display: 'inline';
     }
   }
 
   .right {
-    grid-area: "right";
+    grid-area: 'right';
     display: flex;
     height: 100%;
     min-height: 0;
   }
 
   .bottom {
-    grid-area: "bottom";
+    grid-area: 'bottom';
     display: flex;
     width: 100%;
     min-width: 0;
@@ -51,13 +50,13 @@
     grid-template-columns: 1fr var(--scrollbar-container-thickness-local);
     grid-template-rows: 1fr var(--scrollbar-container-thickness-local);
     grid-template-areas:
-      "main right"
-      "bottom empty";
+      'main right'
+      'bottom empty';
   }
 
   &-right {
     grid-template-columns: 1fr var(--scrollbar-container-thickness-local);
-    grid-template-areas: "main right";
+    grid-template-areas: 'main right';
 
     .main {
       overflow-x: hidden;
@@ -68,8 +67,8 @@
   &-bottom {
     grid-template-rows: 1fr var(--scrollbar-container-thickness-local);
     grid-template-areas:
-      "main"
-      "bottom";
+      'main'
+      'bottom';
 
     .main {
       overflow-x: auto;

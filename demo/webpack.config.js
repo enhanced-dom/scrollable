@@ -24,8 +24,7 @@ module.exports = (env = {}, argv = {}) => {
       extensions: ['.tsx', '.ts', '.json', '.js', '.jsx'],
     },
     optimization: {
-      concatenateModules: true,
-      minimize: isProduction,
+      concatenateModules: isProduction,
       emitOnErrors: !isProduction,
     },
     module: {
@@ -70,6 +69,7 @@ module.exports = (env = {}, argv = {}) => {
         },
       }),
       ...webpackConfigFactory.plugins.cssConfigFactory(),
+      ...(isProduction ? webpackConfigFactory.plugins.terserConfigFactory({ embed: isProduction, enableSourcemaps: !isProduction }) : []),
     ],
     devServer: { historyApiFallback: true, port: 3000 },
   }
