@@ -13,21 +13,32 @@ const App = () => {
       scrollableRef.current.scrollTop = 0
     }
   }, [scrollableRef])
+
   return (
     <>
       <div className={styles.container}>
         <Scrollable ref={scrollableRef} scrollbars={[Scrollable.scrollbarPositions.RIGHT, Scrollable.scrollbarPositions.BOTTOM]}>
           <div
-            style={{ ...dimensions, background: 'radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)' }}
+            style={{
+              ...dimensions,
+              background: 'radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%)',
+            }}
           />
         </Scrollable>
       </div>
       <button
         onClick={() => {
-          setDimensions({ width: dimensions.width - 500, height: dimensions.height - 500 })
+          setDimensions({ width: Math.max(dimensions.width - 500, 500), height: Math.max(dimensions.height - 500, 500) })
         }}
       >
         smaller
+      </button>
+      <button
+        onClick={() => {
+          setDimensions({ width: dimensions.width + 500, height: dimensions.height + 500 })
+        }}
+      >
+        bigger
       </button>
       <button onClick={resetScroll}>reset scroll</button>
     </>
