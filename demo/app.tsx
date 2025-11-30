@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { ScrollableWebComponent } from '../src'
 import { Scrollable } from './scrollable.component'

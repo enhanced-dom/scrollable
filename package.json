@@ -1,6 +1,6 @@
 {
   "name": "@enhanced-dom/scrollable",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Scrollable webcomponent",
   "keywords": [],
   "repository": "https://github.com/enhanced-dom/scrollable.git",
@@ -19,26 +19,26 @@
     "docs": "webpack build --config ./demo/webpack.config.js --mode=production"
   },
   "dependencies": {
-    "@enhanced-dom/webcomponent": "~0.2.0",
-    "@enhanced-dom/scrollbar": "~0.2.0",
-    "@enhanced-dom/css": "~0.2.1",
+    "@enhanced-dom/webcomponent": "~0.3.0",
+    "@enhanced-dom/scrollbar": "~0.3.0",
+    "@enhanced-dom/css": "~0.3.0",
     "classnames": "^2.5.1",
     "lodash.debounce": "^4.0.8",
     "lodash.uniqueid": "^4.0.1"
   },
   "devDependencies": {
-    "@enhanced-dom/babel": "~0.1.0",
-    "@enhanced-dom/lint": "~0.1.4",
-    "@enhanced-dom/react": "~0.1.0",
-    "@enhanced-dom/webpack": "~0.2.0",
+    "@enhanced-dom/babel": "~0.2.0",
+    "@enhanced-dom/lint": "~0.2.1",
+    "@enhanced-dom/react": "~0.2.0",
+    "@enhanced-dom/webpack": "~0.3.0",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.uniqueid": "^4.0.9",
-    "@types/react": "^17.0.75",
-    "@types/react-dom": "^17.0.25",
-    "typescript": "^5.3.3"
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18",
+    "node": ">=20",
     "npm": ">=10"
   }
 }

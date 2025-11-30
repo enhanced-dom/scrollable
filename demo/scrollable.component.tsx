@@ -1,10 +1,10 @@
-import React from 'react'
+import { DetailedHTMLProps, HTMLAttributes } from 'react'
 import { withReactAdapter } from '@enhanced-dom/react'
 
 import { ScrollableWebComponent, ScrollableWebComponentAttributes } from '../src'
 
 declare type ScrollableComponentProps = ScrollableWebComponentAttributes &
-  React.DetailedHTMLProps<React.HTMLAttributes<ScrollableWebComponent>, ScrollableWebComponent>
+  DetailedHTMLProps<HTMLAttributes<ScrollableWebComponent>, ScrollableWebComponent>
 
 export const Scrollable = withReactAdapter<
   ScrollableWebComponent,
