@@ -3,15 +3,15 @@
     "moduleResolution": "node",
     "module": "esnext",
     "target": "es2018",
-    "baseUrl": "./",
     "declaration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "rootDir": "./src",
     "outDir": "dist",
     "preserveConstEnums" : true,
-    "sourceMap": true,
-    "sourceRoot": "./",
-    "inlineSources": true
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": [
     "src/**/*.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@enhanced-dom/scrollable",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Scrollable webcomponent",
   "keywords": [],
   "repository": "https://github.com/enhanced-dom/scrollable.git",
@@ -9,31 +9,29 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "rimraf dist/*",
-    "build": "tsc -p ./tsconfig.json && webpack --config typed-styles.config.js",
+    "build": "tsc -p ./tsconfig.json && webpack --config typed-styles.config.cjs",
     "postbuild": "copyfiles LICENSE.md README.md dist && @enhanced-dom-copy-packagejson",
     "package": "cd dist && npm pack",
     "postinstall": "@enhanced-dom-husky",
-    "css": "webpack --config typed-styles.config.js --watch --mode=none",
-    "lint": "eslint --fix --config eslint.config.js src demo && stylelint --fix --config stylelint.config.js src/**/*.pcss demo/**/*.pcss",
-    "demo": "webpack serve --config ./demo/webpack.config.js",
-    "docs": "webpack build --config ./demo/webpack.config.js --mode=production"
+    "css": "webpack --config typed-styles.config.cjs --watch --mode=none",
+    "lint": "eslint --fix --config eslint.config.cjs src demo && stylelint --fix --config stylelint.config.cjs src/**/*.pcss demo/**/*.pcss",
+    "demo": "webpack serve --config ./demo/webpack.config.cjs",
+    "docs": "webpack build --config ./demo/webpack.config.cjs --mode=production"
   },
   "dependencies": {
-    "@enhanced-dom/webcomponent": "~0.3.0",
-    "@enhanced-dom/scrollbar": "~0.3.0",
-    "@enhanced-dom/css": "~0.3.0",
+    "@enhanced-dom/webcomponent": "~0.4.0",
+    "@enhanced-dom/scrollbar": "~0.3.1",
+    "@enhanced-dom/css": "~0.3.1",
     "classnames": "^2.5.1",
-    "lodash.debounce": "^4.0.8",
-    "lodash.uniqueid": "^4.0.1"
+    "lodash-es": "^4.18.1"
   },
   "devDependencies": {
-    "@enhanced-dom/babel": "~0.2.0",
-    "@enhanced-dom/lint": "~0.2.1",
-    "@enhanced-dom/react": "~0.2.0",
-    "@enhanced-dom/webpack": "~0.3.0",
-    "@types/lodash.debounce": "^4.0.9",
-    "@types/lodash.uniqueid": "^4.0.9",
-    "@types/react": "^18.3.27",
+    "@enhanced-dom/babel": "~0.2.1",
+    "@enhanced-dom/lint": "~0.3.0",
+    "@enhanced-dom/react": "~0.3.0",
+    "@enhanced-dom/webpack": "~0.4.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "typescript": "^5.9.3"
   },
