@@ -129,11 +129,12 @@ export class ScrollableWebComponent extends HTMLElement {
   }
   private _eventListenerTracker = new EventListenerTracker()
   private _stylesheetsRepository: StylesheetsRepository
+  private _shadowRoot: ShadowRoot
 
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
-    this._stylesheetsRepository = new StylesheetsRepository(this.shadowRoot, ScrollableWebComponent.tag)
+    this._shadowRoot = this.attachShadow({ mode: 'open' })
+    this._stylesheetsRepository = new StylesheetsRepository(this._shadowRoot, ScrollableWebComponent.tag)
   }
 
   private _removeEventListeners() {
@@ -207,19 +208,19 @@ export class ScrollableWebComponent extends HTMLElement {
   }
 
   private get $mainContentElement() {
-    return this.shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.SCROLL_SIZER})`)
+    return this._shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.SCROLL_SIZER})`)
   }
 
   private _findScrollContainer = (): HTMLElement => {
-    return this.shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.SCROLL_CONTAINER})`)
+    return this._shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.SCROLL_CONTAINER})`) as HTMLElement
   }
 
   private _findRightScrollbar = (): ScrollbarWebComponent => {
-    return this.shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.RIGHT_SCROLLBAR})`)
+    return this._shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.RIGHT_SCROLLBAR})`) as ScrollbarWebComponent
   }
 
   private _findBottomScrollbar = (): ScrollbarWebComponent => {
-    return this.shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.BOTTOM_SCROLLBAR})`)
+    return this._shadowRoot.querySelector(`*::part(${ScrollableWebComponent.parts.BOTTOM_SCROLLBAR})`) as ScrollbarWebComponent
   }
 
   private _scrollSizeObserver = new ResizeObserver((entries) => {
@@ -248,7 +249,7 @@ export class ScrollableWebComponent extends HTMLElement {
 
   render = debounce(
     () => {
-      ScrollableWebComponent.renderer.render(this.shadowRoot, this._attributes)
+      ScrollableWebComponent.renderer.render(this._shadowRoot, this._attributes)
       this._monitorScrollSize()
       this._eventListenerTracker.refreshSubscriptions()
     },
@@ -315,9 +316,6 @@ export class ScrollableWebComponent extends HTMLElement {
           break
         case 'delegated':
           this.delegated = newVal
-          break
-        default:
-          this._attributes[name] = newVal
           break
       }
       this.render()

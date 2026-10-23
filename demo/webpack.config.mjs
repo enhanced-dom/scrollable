@@ -1,17 +1,19 @@
-const path = require('path')
-const babelConfigFactory = require('@enhanced-dom/babel').configFactory
-const webpackConfigFactory = require('@enhanced-dom/webpack')
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { configFactory as babelConfigFactory } from '@enhanced-dom/babel'
+import webpackConfigFactory from '@enhanced-dom/webpack'
 
-fs = require('fs')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-module.exports = (env = {}, argv = {}) => {
+export default (env = {}, argv = {}) => {
   const isProduction = argv.mode === 'production'
+  const isAnalyzing = !!env.analyze
   const publicPath = '/'
   const babelConfig = babelConfigFactory()
 
   return {
     mode: isProduction ? 'production' : 'development',
-    entry: { bundle: [`./${path.relative(process.cwd(), path.resolve(__dirname, './index.tsx'))}`] },
+    entry: { bundle: [`./${path.relative(process.cwd(), path.resolve(__dirname, './index.ts'))}`] },
     output: {
       filename: 'bundle-[contenthash].js',
       publicPath,
@@ -24,7 +26,8 @@ module.exports = (env = {}, argv = {}) => {
       extensions: ['.tsx', '.ts', '.json', '.js', '.jsx'],
     },
     optimization: {
-      concatenateModules: isProduction,
+      concatenateModules: !isAnalyzing,
+      minimize: isProduction,
       emitOnErrors: !isProduction,
     },
     module: {
@@ -36,25 +39,12 @@ module.exports = (env = {}, argv = {}) => {
         },
         {
           test: /\.pcss$/,
-          exclude: /demo/,
           use: webpackConfigFactory.loaders.styleConfigFactory({
             sourceMap: !isProduction,
             parser: 'postcss',
             typedStyles: true,
             modules: true,
             raw: true,
-            extract: true,
-          }),
-        },
-        {
-          test: /\.pcss$/,
-          include: /demo/,
-          use: webpackConfigFactory.loaders.styleConfigFactory({
-            sourceMap: !isProduction,
-            parser: 'postcss',
-            typedStyles: true,
-            modules: true,
-            raw: false,
             extract: false,
           }),
         },
@@ -67,14 +57,15 @@ module.exports = (env = {}, argv = {}) => {
     },
     plugins: [
       ...webpackConfigFactory.plugins.htmlConfigFactory({
-        embed: isProduction,
+        embed: isProduction && !isAnalyzing,
+        compress: isProduction && !isAnalyzing,
         html: {
           minify: isProduction,
           title: 'Scrollable demo',
         },
       }),
       ...webpackConfigFactory.plugins.cssConfigFactory(),
-      ...(isProduction ? webpackConfigFactory.plugins.terserConfigFactory({ embed: isProduction, enableSourcemaps: !isProduction }) : []),
+      ...(isAnalyzing ? webpackConfigFactory.plugins.bundleAnalyzerConfigFactory() : []),
     ],
     devServer: { historyApiFallback: true, port: 3000 },
   }

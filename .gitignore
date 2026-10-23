@@ -4,3 +4,13 @@ node_modules/
 .DS_Store
 npm-debug.log*
 docs
+# @enhanced-dom/lint
+.fallowrc.json
+.npmrc
+.nvmrc
+# end @enhanced-dom/lint
+.claude
+.devcontainer
+.rtk
+CLAUDE.md
+.vscode
